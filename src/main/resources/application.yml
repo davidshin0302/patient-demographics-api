@@ -1,8 +1,18 @@
 spring:
+  application:
+    name: Patient Demographics API
+management:
+  endpoint:
+    health:
+      show-details: always
+  endpoints:
+    web:
+      exposure:
+        include: health, info, metrics, httpexchanges
   datasource:
     url: jdbc:postgresql://localhost:5432/patient_demographics
     username: postgres
-    password: zkfmtmak
+    password: PASSWORD
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
