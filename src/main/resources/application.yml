@@ -1,14 +1,9 @@
+######################
+# Spring Configuration
+#####################
 spring:
   application:
     name: Patient Demographics API
-management:
-  endpoint:
-    health:
-      show-details: always
-  endpoints:
-    web:
-      exposure:
-        include: health, info, metrics, httpexchanges
   datasource:
     url: jdbc:postgresql://localhost:5432/patient_demographics
     username: postgres
@@ -17,3 +12,19 @@ management:
   jpa:
     hibernate:
       ddl-auto: update
+#####################
+# Actuator Configuration
+#####################
+management:
+  endpoint:
+    health:
+      show-details: always
+  endpoints:
+    web:
+      exposure:
+        include: health, info, metrics, httpexchanges
+#####################
+# Server Configuration
+#####################
+server:
+  port:8081
