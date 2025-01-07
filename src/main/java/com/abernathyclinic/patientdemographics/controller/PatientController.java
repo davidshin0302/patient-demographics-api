@@ -27,7 +27,7 @@ public class PatientController {
         try {
             patientRepository.save(patient);
 
-            responseEntity = ResponseEntity.status(HttpStatus.OK)
+            responseEntity = ResponseEntity.status(HttpStatus.CREATED)
                     .contentType(MediaType.APPLICATION_JSON)
                     .body(patient);
 
