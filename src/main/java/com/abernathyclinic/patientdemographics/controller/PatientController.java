@@ -20,9 +20,26 @@ public class PatientController {
     @Autowired
     PatientRepository patientRepository;
 
-    @PostMapping
-    public ResponseEntity<Patient> addPatient(@RequestParam Patient patient) {
+    @PostMapping("/add")
+    public ResponseEntity<Patient> addPatient(
+            @RequestParam("family") String familyName,
+            @RequestParam("given") String givenName,
+            @RequestParam("dob") String dateOfBirth,
+            @RequestParam("sex") String sex,
+            @RequestParam("address") String homeAddress,
+            @RequestParam("phone") String phoneNumber) {
+
         ResponseEntity<Patient> responseEntity;
+
+        Patient patient = Patient.builder()
+                .familyName(familyName)
+                .givenName(givenName)
+                .dateOfBirth(dateOfBirth)
+                .sex(sex)
+                .homeAddress(homeAddress)
+                .phoneNumber(phoneNumber)
+                .build();
+
 
         try {
             patientRepository.save(patient);
