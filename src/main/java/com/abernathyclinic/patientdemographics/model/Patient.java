@@ -1,11 +1,13 @@
 package com.abernathyclinic.patientdemographics.model;
 
 import jakarta.persistence.*;
+import lombok.Builder;
 import lombok.Data;
 
 
 @Data
 @Entity
+@Builder
 @Table(name = "patients")
 public class Patient {
 
@@ -15,6 +17,7 @@ public class Patient {
 
     @Column(name = "given_name", nullable = false)
     private String givenName;
+
 
     @Column(name = "family_name", nullable = false)
     private String familyName;
