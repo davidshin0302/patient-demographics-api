@@ -2,18 +2,21 @@ package com.abernathyclinic.patientdemographics.controller;
 
 import com.abernathyclinic.patientdemographics.model.Patient;
 import com.abernathyclinic.patientdemographics.repository.PatientRepository;
+import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 @Slf4j
-@Controller
+@RestController
 @RequestMapping("/patient")
 public class PatientController {
 
@@ -22,10 +25,10 @@ public class PatientController {
 
     @PostMapping("/add")
     public ResponseEntity<Patient> addPatient(
-            @RequestParam("family") String familyName,
-            @RequestParam("given") String givenName,
-            @RequestParam("dob") String dateOfBirth,
-            @RequestParam("sex") String sex,
+            @Valid @RequestParam("family") String familyName,
+            @Valid @RequestParam("given") String givenName,
+            @Valid @RequestParam("dob") String dateOfBirth,
+            @Valid @RequestParam("sex") String sex,
             @RequestParam("address") String homeAddress,
             @RequestParam("phone") String phoneNumber) {
 
@@ -40,7 +43,6 @@ public class PatientController {
                 .phoneNumber(phoneNumber)
                 .build();
 
-
         try {
             patientRepository.save(patient);
 
@@ -49,11 +51,16 @@ public class PatientController {
                     .body(patient);
 
             log.info("processed POST request '/patient'...");
-        } catch (NullPointerException ex) {
-            log.error("Can't not save Null values {}", patient);
+        } catch (DataIntegrityViolationException ex) {
+            log.error("The Patient already exist in the system: {}", patient);
             log.error(ex.getMessage());
 
-            responseEntity = new ResponseEntity<>(HttpStatus.CONFLICT);
+            responseEntity = ResponseEntity.status(HttpStatus.CONFLICT).build();
+        } catch (Exception ex) {
+            log.error("Unable to add new patent: {}", patient);
+            log.error(ex.getMessage());
+
+            responseEntity = ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
 
         return responseEntity;
