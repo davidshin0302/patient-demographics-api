@@ -9,13 +9,18 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Slf4j
-@RestController
+@Controller
 @RequestMapping("/patient")
 public class PatientController {
 
@@ -63,5 +68,33 @@ public class PatientController {
         }
 
         return responseEntity;
+    }
+
+    @GetMapping("/data")
+    public ResponseEntity<List<Patient>> getPatients() {
+        ResponseEntity<List<Patient>> responseEntity;
+
+        try {
+            List<Patient> patientList = new ArrayList<>();
+            patientList = patientRepository.findAll();
+
+            responseEntity = ResponseEntity.status(HttpStatus.OK)
+                    .body(patientList);
+        } catch (RuntimeException ex) {
+            log.error("Unable to fetch list of patients");
+            log.error(ex.getMessage());
+
+            responseEntity = ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+
+        return responseEntity;
+    }
+
+    @GetMapping
+    public String showPatientPage(Model model) {
+        List<Patient> patientList = patientRepository.findAll();
+        model.addAttribute("patientList", patientList);
+
+        return "patient-list";
     }
 }
