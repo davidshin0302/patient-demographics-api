@@ -2,13 +2,17 @@ package com.abernathyclinic.patientdemographics.model;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 
 @Data
 @Entity
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @Table(name = "patients", uniqueConstraints = {
         @UniqueConstraint(columnNames = "date_of_birth"), // dob must be unique
         @UniqueConstraint(columnNames = {"given_name", "family_name"}), // combination of given and family name must be unique.
