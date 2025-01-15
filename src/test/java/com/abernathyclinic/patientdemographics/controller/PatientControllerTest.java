@@ -49,7 +49,6 @@ class PatientControllerTest {
 
     @Test
     void add_new_patient() {
-
         when(patientRepository.save(any(Patient.class))).thenReturn(patient);
 
         ResponseEntity<Patient> responseEntity = patientController.addPatient("shin", "david", "M", "03/02/1987", "123-345-6789", "123 main st");

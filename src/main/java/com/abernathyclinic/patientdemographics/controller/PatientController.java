@@ -11,16 +11,14 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
 @Controller
+@CrossOrigin
 @RequestMapping("/patient")
 public class PatientController {
 
@@ -80,6 +78,7 @@ public class PatientController {
 
             responseEntity = ResponseEntity.status(HttpStatus.OK)
                     .body(patientList);
+            log.info("processed GET request '/patient/data....");
         } catch (RuntimeException ex) {
             log.error("Unable to fetch list of patients");
             log.error(ex.getMessage());
