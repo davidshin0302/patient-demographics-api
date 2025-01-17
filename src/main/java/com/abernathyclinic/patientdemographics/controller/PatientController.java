@@ -1,6 +1,7 @@
 package com.abernathyclinic.patientdemographics.controller;
 
 import com.abernathyclinic.patientdemographics.model.Patient;
+import com.abernathyclinic.patientdemographics.model.PatientList;
 import com.abernathyclinic.patientdemographics.repository.PatientRepository;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
@@ -12,9 +13,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @Slf4j
 @Controller
@@ -69,12 +67,12 @@ public class PatientController {
     }
 
     @GetMapping("/data")
-    public ResponseEntity<List<Patient>> getPatients() {
-        ResponseEntity<List<Patient>> responseEntity;
+    public ResponseEntity<PatientList> getPatients() {
+        ResponseEntity<PatientList> responseEntity;
 
         try {
-            List<Patient> patientList = new ArrayList<>();
-            patientList = patientRepository.findAll();
+            PatientList patientList = new PatientList();
+            patientList.setPatientList(patientRepository.findAll());
 
             responseEntity = ResponseEntity.status(HttpStatus.OK)
                     .body(patientList);
@@ -91,8 +89,11 @@ public class PatientController {
 
     @GetMapping
     public String showPatientPage(Model model) {
-        List<Patient> patientList = patientRepository.findAll();
-        model.addAttribute("patientList", patientList);
+        PatientList patientList = new PatientList();
+
+        patientList.setPatientList(patientRepository.findAll());
+
+        model.addAttribute("patientList", patientList.getPatientList());
 
         return "patient-list";
     }
