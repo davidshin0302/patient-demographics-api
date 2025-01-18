@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Patient List</title>
+</head>
+<body>
+    <h1>List of Patients</h1>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Given Name</th>
+                <th>Family Name</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="patient : ${patientList}">
+                <td th:text="${patient.givenName}"></td>
+                <td th:text="${patient.familyName}"></td>
+            </tr>
+        </tbody>
+    </table>
+</body>
+</html>

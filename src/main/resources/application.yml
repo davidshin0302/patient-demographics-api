@@ -1,6 +1,20 @@
+######################
+# Spring Configuration
+#####################
 spring:
   application:
     name: Patient Demographics API
+  datasource:
+    url: jdbc:postgresql://localhost:5432/patient_demographics
+    username: postgres
+    password: ${DB_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+#####################
+# Actuator Configuration
+#####################
 management:
   endpoint:
     health:
@@ -9,11 +23,8 @@ management:
     web:
       exposure:
         include: health, info, metrics, httpexchanges
-  datasource:
-    url: jdbc:postgresql://localhost:5432/patient_demographics
-    username: postgres
-    password: PASSWORD
-    driver-class-name: org.postgresql.Driver
-  jpa:
-    hibernate:
-      ddl-auto: update
+#####################
+# Server Configuration
+#####################
+server:
+  port: 8081
