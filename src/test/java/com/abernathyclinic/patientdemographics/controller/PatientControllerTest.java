@@ -1,8 +1,8 @@
 package com.abernathyclinic.patientdemographics.controller;
 
 import com.abernathyclinic.patientdemographics.model.Patient;
+import com.abernathyclinic.patientdemographics.model.PatientList;
 import com.abernathyclinic.patientdemographics.repository.PatientRepository;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -18,7 +18,7 @@ import org.springframework.ui.Model;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
+import java.util.ArrayList;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -37,19 +37,21 @@ class PatientControllerTest {
     ObjectMapper objectMapper;
 
     Patient patient;
-    List<Patient> patientList;
+    PatientList patientList;
+
+    String FILE_PATH = "src/test/java/com/abernathyclinic/patientdemographics/resources/patientList.json";
 
     @BeforeEach
     void setUp() throws IOException {
         objectMapper = new ObjectMapper();
-        String filePath = "src/test/java/com/abernathyclinic/patientdemographics/resources/patientList.json";
-        patientList = objectMapper.readValue(new File(filePath), new TypeReference<List<Patient>>() {
-        });
+        patientList = new PatientList();
+
+        patientList.setPatientList(new ArrayList<>());
+        patientList = objectMapper.readValue(new File(FILE_PATH), PatientList.class);
     }
 
     @Test
     void add_new_patient() {
-
         when(patientRepository.save(any(Patient.class))).thenReturn(patient);
 
         ResponseEntity<Patient> responseEntity = patientController.addPatient("shin", "david", "M", "03/02/1987", "123-345-6789", "123 main st");
@@ -84,19 +86,19 @@ class PatientControllerTest {
 
     @Test
     void get_patients_data() {
-        when(patientRepository.findAll()).thenReturn(patientList);
+        when(patientRepository.findAll()).thenReturn(patientList.getPatientList());
 
-        ResponseEntity<List<Patient>> responseEntity = patientController.getPatients();
+        ResponseEntity<PatientList> responseEntity = patientController.getPatients();
 
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
-        assertEquals(patientRepository.findAll().size(), patientList.size());
+        assertEquals(patientRepository.findAll().size(), patientList.getPatientList().size());
     }
 
     @Test
     void get_bad_request_patients_data() {
         when(patientRepository.findAll()).thenThrow(new RuntimeException("Bad Request"));
 
-        ResponseEntity<List<Patient>> responseEntity = patientController.getPatients();
+        ResponseEntity<PatientList> responseEntity = patientController.getPatients();
 
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, responseEntity.getStatusCode());
         assertNull(responseEntity.getBody());
@@ -104,12 +106,12 @@ class PatientControllerTest {
 
     @Test
     void show_patient_page() {
-        when(patientRepository.findAll()).thenReturn(patientList);
+        when(patientRepository.findAll()).thenReturn(patientList.getPatientList());
 
         String viewPage = patientController.showPatientPage(model);
 
         assertEquals("patient-list", viewPage);
-        verify(model).addAttribute("patientList", patientList);
+        verify(model).addAttribute("patientList", patientList.getPatientList());
         verify(patientRepository).findAll();
     }
 }
