@@ -12,21 +12,18 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.Optional;
 
 @Slf4j
 @Controller
 @CrossOrigin
-@RequestMapping("/patient")
+@RequestMapping
 public class PatientController {
 
     @Autowired
     PatientRepository patientRepository;
 
-    @GetMapping
+    @GetMapping("/patients")
     public ResponseEntity<PatientList> getPatients() {
         ResponseEntity<PatientList> responseEntity;
 
@@ -47,13 +44,12 @@ public class PatientController {
         return responseEntity;
     }
 
-    @PutMapping("/update/{id}")
+    @PutMapping("patient/update/{id}")
     public ResponseEntity<Patient> updatePatient(@PathVariable Long id, @RequestBody Patient updatePatient) {
         ResponseEntity<Patient> responseEntity;
 
-
         try {
-            Patient patient = patientRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Patient with Id is not found, ID: "+ id));
+            Patient patient = patientRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Patient with Id is not found, ID: " + id));
 
             patient.setGivenName(updatePatient.getGivenName());
             patient.setFamilyName(updatePatient.getFamilyName());
@@ -69,7 +65,7 @@ public class PatientController {
         } catch (EntityNotFoundException ex) {
             log.error(ex.getMessage());
             responseEntity = ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        } catch ( Exception ex){
+        } catch (Exception ex) {
             log.error("Unexpected Error Occurred: {}", ex.getMessage());
             responseEntity = ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
@@ -77,7 +73,7 @@ public class PatientController {
         return responseEntity;
     }
 
-    @PostMapping("/add")
+    @PostMapping("patient/add")
     public ResponseEntity<Patient> addPatient(
             @Valid @RequestParam("family") String familyName,
             @Valid @RequestParam("given") String givenName,
@@ -119,8 +115,6 @@ public class PatientController {
 
         return responseEntity;
     }
-
-
 
 /*    Temporarily for API endpoint to use thymeleaf .
     @GetMapping
