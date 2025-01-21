@@ -87,6 +87,7 @@ public class PatientController {
         return responseEntity;
     }
 
+/*    Temporarily for API endpoint to use thymeleaf .
     @GetMapping
     public String showPatientPage(Model model) {
         PatientList patientList = new PatientList();
@@ -97,4 +98,5 @@ public class PatientController {
 
         return "patient-list";
     }
+ */
 }
