@@ -6,35 +6,36 @@ import com.abernathyclinic.patientdemographics.repository.PatientRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.ui.Model;
+import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.web.servlet.MockMvc;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@ExtendWith(MockitoExtension.class)
+@WebMvcTest(PatientController.class)
 class PatientControllerTest {
-    @Mock
+    @MockitoBean
     PatientRepository patientRepository;
-    @Mock
-    Model model;
     @InjectMocks
     PatientController patientController;
     @Autowired
     ObjectMapper objectMapper;
+    @Autowired
+    MockMvc mockMvc;
 
     Patient patient;
     PatientList patientList;
@@ -51,59 +52,66 @@ class PatientControllerTest {
     }
 
     @Test
-    void add_new_patient() {
+    void add_new_patient() throws Exception {
         when(patientRepository.save(any(Patient.class))).thenReturn(patient);
 
-        ResponseEntity<Patient> responseEntity = patientController.addPatient("shin", "david", "M", "03/02/1987", "123-345-6789", "123 main st");
-
-        assertEquals(HttpStatus.CREATED, responseEntity.getStatusCode());
-        assertNotNull(responseEntity.getBody());
-        assertEquals(responseEntity.getBody().getFamilyName(), "shin");
-        assertEquals(responseEntity.getBody().getGivenName(), "david");
-        assertEquals(responseEntity.getBody().getDateOfBirth(), "M");
-        assertEquals(responseEntity.getBody().getSex(), "03/02/1987");
+        mockMvc.perform(post("http://localhost:8081/patient/add?family=TestNone&given=Test&dob=1966-12-31&sex=F&address=1 Brrokside St&phone=100-222-3333")
+                ).andExpect(status().isCreated())
+                .andExpect(jsonPath("$.givenName").value("Test"))
+                .andExpect(jsonPath("$.familyName").value("TestNone"))
+                .andExpect(jsonPath("$.dateOfBirth").value("1966-12-31"))
+                .andExpect(jsonPath("$.homeAddress").value("1 Brrokside St"))
+                .andExpect(jsonPath("$.phoneNumber").value("100-222-3333"));
     }
 
     @Test
-    void add_conflict_patient() {
+    void add_conflict_patient() throws Exception {
         when(patientRepository.save(any(Patient.class))).thenThrow(new DataIntegrityViolationException("Conflict"));
 
-        ResponseEntity<Patient> responseEntity = patientController.addPatient("shin", "david", "M", "03/02/1987", "123-345-6789", "123 main st");
-
-        assertEquals(HttpStatus.CONFLICT, responseEntity.getStatusCode());
-        assertNull(responseEntity.getBody());
+        mockMvc.perform(post("http://localhost:8081/patient/add?family=TestNone&given=Test&dob=1966-12-31&sex=F&address=1 Brrokside St&phone=100-222-3333")
+        ).andExpect(status().isConflict());
     }
 
     @Test
-    void add_bad_request_patient() {
+    void add_bad_request_patient() throws Exception{
         when(patientRepository.save(any(Patient.class))).thenThrow(new RuntimeException("Bad Request"));
 
-        ResponseEntity<Patient> responseEntity = patientController.addPatient(" ", " ", " ", " ", " ", " ");
-
-        assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
-        assertNull(responseEntity.getBody());
+        mockMvc.perform(post("http://localhost:8081/patient/add?family=&given=&dob=&sex=&address=&phone="))
+                .andExpect(status().isBadRequest());
     }
 
     @Test
-    void get_patients_data() {
+    void get_patients_data() throws Exception {
         when(patientRepository.findAll()).thenReturn(patientList.getPatientList());
 
-        ResponseEntity<PatientList> responseEntity = patientController.getPatients();
-
-        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
-        assertEquals(patientRepository.findAll().size(), patientList.getPatientList().size());
+        mockMvc.perform(get("http://localhost:8081/patient"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.patientList", hasSize(4)));
     }
 
     @Test
-    void get_bad_request_patients_data() {
+    void get_bad_request_patients_data() throws Exception{
         when(patientRepository.findAll()).thenThrow(new RuntimeException("Bad Request"));
 
-        ResponseEntity<PatientList> responseEntity = patientController.getPatients();
-
-        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, responseEntity.getStatusCode());
-        assertNull(responseEntity.getBody());
+        mockMvc.perform(get("http://localhost:8081/patient"))
+                .andExpect(status().isInternalServerError());
     }
 
+    @Test
+    void update_patient() throws Exception {
+        Optional<Patient> optionalPatient = Optional.ofNullable(patientList.getPatientList().isEmpty() ? null : patientList.getPatientList().getFirst());
+        when(patientRepository.findById(any(Long.class))).thenReturn(optionalPatient);
+
+        Patient updatePatient = optionalPatient.get();
+
+        updatePatient.setGivenName("teeeeet");
+        mockMvc.perform(put("http://localhost:8081/patient/update/5")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(updatePatient)))
+                .andExpect(status().isOk());
+    }
+
+    /*    Temporarily for API endpoint to use thymeleaf .
     @Test
     void show_patient_page() {
         when(patientRepository.findAll()).thenReturn(patientList.getPatientList());
@@ -114,4 +122,5 @@ class PatientControllerTest {
         verify(model).addAttribute("patientList", patientList.getPatientList());
         verify(patientRepository).findAll();
     }
+     */
 }
