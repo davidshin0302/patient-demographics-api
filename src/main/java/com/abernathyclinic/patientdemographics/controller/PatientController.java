@@ -3,6 +3,7 @@ package com.abernathyclinic.patientdemographics.controller;
 import com.abernathyclinic.patientdemographics.model.Patient;
 import com.abernathyclinic.patientdemographics.model.PatientList;
 import com.abernathyclinic.patientdemographics.repository.PatientRepository;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +15,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Optional;
+
 @Slf4j
 @Controller
 @CrossOrigin
@@ -22,6 +25,57 @@ public class PatientController {
 
     @Autowired
     PatientRepository patientRepository;
+
+    @GetMapping
+    public ResponseEntity<PatientList> getPatients() {
+        ResponseEntity<PatientList> responseEntity;
+
+        try {
+            PatientList patientList = new PatientList();
+            patientList.setPatientList(patientRepository.findAll());
+
+            responseEntity = ResponseEntity.status(HttpStatus.OK)
+                    .body(patientList);
+            log.info("processed GET request '/patient/data....");
+        } catch (RuntimeException ex) {
+            log.error("Unable to fetch list of patients");
+            log.error(ex.getMessage());
+
+            responseEntity = ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+
+        return responseEntity;
+    }
+
+    @PutMapping("/update/{id}")
+    public ResponseEntity<Patient> updatePatient(@PathVariable Long id, @RequestBody Patient updatePatient) {
+        ResponseEntity<Patient> responseEntity;
+
+
+        try {
+            Patient patient = patientRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Patient with Id is not found, ID: "+ id));
+
+            patient.setGivenName(updatePatient.getGivenName());
+            patient.setFamilyName(updatePatient.getFamilyName());
+            patient.setDateOfBirth(updatePatient.getDateOfBirth());
+            patient.setSex(updatePatient.getSex());
+            patient.setPhoneNumber(updatePatient.getPhoneNumber());
+            patient.setHomeAddress(updatePatient.getHomeAddress());
+
+            patientRepository.save(patient);
+            responseEntity = ResponseEntity.status(HttpStatus.OK).body(patient);
+
+            log.info("processed Put request '/patient/update/....");
+        } catch (EntityNotFoundException ex) {
+            log.error(ex.getMessage());
+            responseEntity = ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        } catch ( Exception ex){
+            log.error("Unexpected Error Occurred: {}", ex.getMessage());
+            responseEntity = ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+
+        return responseEntity;
+    }
 
     @PostMapping("/add")
     public ResponseEntity<Patient> addPatient(
@@ -66,26 +120,7 @@ public class PatientController {
         return responseEntity;
     }
 
-    @GetMapping("/data")
-    public ResponseEntity<PatientList> getPatients() {
-        ResponseEntity<PatientList> responseEntity;
 
-        try {
-            PatientList patientList = new PatientList();
-            patientList.setPatientList(patientRepository.findAll());
-
-            responseEntity = ResponseEntity.status(HttpStatus.OK)
-                    .body(patientList);
-            log.info("processed GET request '/patient/data....");
-        } catch (RuntimeException ex) {
-            log.error("Unable to fetch list of patients");
-            log.error(ex.getMessage());
-
-            responseEntity = ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
-
-        return responseEntity;
-    }
 
 /*    Temporarily for API endpoint to use thymeleaf .
     @GetMapping
