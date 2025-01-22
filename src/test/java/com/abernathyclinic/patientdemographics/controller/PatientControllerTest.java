@@ -4,6 +4,7 @@ import com.abernathyclinic.patientdemographics.model.Patient;
 import com.abernathyclinic.patientdemographics.model.PatientList;
 import com.abernathyclinic.patientdemographics.repository.PatientRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -73,7 +74,7 @@ class PatientControllerTest {
     }
 
     @Test
-    void add_bad_request_patient() throws Exception{
+    void add_bad_request_patient() throws Exception {
         when(patientRepository.save(any(Patient.class))).thenThrow(new RuntimeException("Bad Request"));
 
         mockMvc.perform(post("http://localhost:8081/patient/add?family=&given=&dob=&sex=&address=&phone="))
@@ -84,16 +85,16 @@ class PatientControllerTest {
     void get_patients_data() throws Exception {
         when(patientRepository.findAll()).thenReturn(patientList.getPatientList());
 
-        mockMvc.perform(get("http://localhost:8081/patient"))
+        mockMvc.perform(get("http://localhost:8081/patients"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.patientList", hasSize(4)));
     }
 
     @Test
-    void get_bad_request_patients_data() throws Exception{
+    void get_bad_request_patients_data() throws Exception {
         when(patientRepository.findAll()).thenThrow(new RuntimeException("Bad Request"));
 
-        mockMvc.perform(get("http://localhost:8081/patient"))
+        mockMvc.perform(get("http://localhost:8081/patients"))
                 .andExpect(status().isInternalServerError());
     }
 
@@ -108,7 +109,39 @@ class PatientControllerTest {
         mockMvc.perform(put("http://localhost:8081/patient/update/5")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(updatePatient)))
-                .andExpect(status().isOk());
+                .andExpectAll(status().isOk(), jsonPath("$.givenName").value("teeeeet"));
+    }
+
+    @Test
+    void update_patient_not_found() throws Exception {
+        Patient updatePatient = Patient.builder().
+                givenName("")
+                .familyName("")
+                .sex("M")
+                .dateOfBirth("123").build();
+
+        when(patientRepository.findById(any(Long.class))).thenThrow(EntityNotFoundException.class);
+
+        mockMvc.perform(put("http://localhost:8081/patient/update/9999")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(updatePatient)))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void update_patient_internal_error() throws Exception {
+        Patient updatePatient = Patient.builder().
+                givenName("")
+                .familyName("")
+                .sex("M")
+                .dateOfBirth("123").build();
+
+        when(patientRepository.findById(any(Long.class))).thenThrow(RuntimeException.class);
+
+        mockMvc.perform(put("http://localhost:8081/patient/update/22222")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(updatePatient)))
+                .andExpect(status().isInternalServerError());
     }
 
     /*    Temporarily for API endpoint to use thymeleaf .

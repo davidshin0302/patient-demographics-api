@@ -65,7 +65,7 @@ public class PatientController {
         } catch (EntityNotFoundException ex) {
             log.error(ex.getMessage());
             responseEntity = ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        } catch (Exception ex) {
+        } catch (RuntimeException ex) {
             log.error("Unexpected Error Occurred: {}", ex.getMessage());
             responseEntity = ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
