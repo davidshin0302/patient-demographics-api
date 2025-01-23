@@ -144,6 +144,34 @@ class PatientControllerTest {
                 .andExpect(status().isInternalServerError());
     }
 
+    @Test
+    void delete_patient() throws Exception {
+        Optional<Patient> optionalPatient = Optional.ofNullable(patientList.getPatientList().isEmpty() ? null : patientList.getPatientList().getFirst());
+        when(patientRepository.findById(any(Long.class))).thenReturn(optionalPatient);
+
+        Patient deletePatient = optionalPatient.get();
+
+        mockMvc.perform(delete("http://localhost:8081/patient/delete/11")
+                .content(objectMapper.writeValueAsString(deletePatient)))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void delete_patient_not_found() throws Exception {
+        Patient deletePatient = Patient.builder().
+                givenName("No Exist")
+                .familyName("")
+                .sex("M")
+                .dateOfBirth("0000").build();
+
+        when(patientRepository.findById(any(Long.class))).thenReturn(Optional.empty());
+
+        mockMvc.perform(delete("http://localhost:8081/patient/delete/1111")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(deletePatient)))
+                .andExpect(status().isNotFound());
+    }
+
     /*    Temporarily for API endpoint to use thymeleaf .
     @Test
     void show_patient_page() {
