@@ -14,6 +14,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Optional;
+
 @Slf4j
 @Controller
 @CrossOrigin
@@ -111,6 +113,24 @@ public class PatientController {
             log.error(ex.getMessage());
 
             responseEntity = ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
+
+        return responseEntity;
+    }
+
+    @DeleteMapping("/patient/delete/{id}")
+    public ResponseEntity<HttpStatus> deletePatient(@PathVariable Long id) {
+        ResponseEntity<HttpStatus> responseEntity;
+        Optional<Patient> patientOptional = patientRepository.findById(id);
+
+        if (patientOptional.isPresent()) {
+            patientRepository.delete(patientOptional.get());
+
+            responseEntity = ResponseEntity.status(HttpStatus.OK).build();
+            log.info("processed DELETE request '/patient'...");
+        } else {
+            log.error("Couldn't find the matching Patient, Id: {}", id);
+            responseEntity = ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
 
         return responseEntity;
