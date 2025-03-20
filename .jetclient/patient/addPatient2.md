@@ -1,7 +1,7 @@
 ```toml
 name = 'addPatient2'
 method = 'POST'
-url = 'http://localhost:8081/patient/add?family=TestBorderline&given=Test&dob=1945-06-24&sex=M&address=2 High St&phone=200-333-4444'
+url = 'http://localhost:8081/patient/add?family=TestBorderline&given=Test&dob=1945-06-21&sex=M&address=2 High St&phone=200-333-4444'
 sortWeight = 1250000
 id = 'a4c0f140-9579-484d-93cd-8dd48e32e933'
 
@@ -15,7 +15,7 @@ value = 'Test'
 
 [[queryParams]]
 key = 'dob'
-value = '1945-06-24'
+value = '1945-06-21'
 
 [[queryParams]]
 key = 'sex'
