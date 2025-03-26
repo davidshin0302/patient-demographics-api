@@ -22,6 +22,7 @@ import java.util.Optional;
 
 import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -38,10 +39,9 @@ class PatientControllerTest {
     @Autowired
     MockMvc mockMvc;
 
-    Patient patient;
     PatientList patientList;
 
-    String FILE_PATH = "src/test/java/com/abernathyclinic/patientdemographics/resources/patientList.json";
+    String FILE_PATH = "src/test/java/com/abernathyclinic/patientdemographics/resources/";
 
     @BeforeEach
     void setUp() throws IOException {
@@ -49,11 +49,12 @@ class PatientControllerTest {
         patientList = new PatientList();
 
         patientList.setPatientList(new ArrayList<>());
-        patientList = objectMapper.readValue(new File(FILE_PATH), PatientList.class);
+        patientList = objectMapper.readValue(new File(FILE_PATH + "patientList.json"), PatientList.class);
     }
 
     @Test
     void add_new_patient() throws Exception {
+        Patient patient = new Patient();
         when(patientRepository.save(any(Patient.class))).thenReturn(patient);
 
         mockMvc.perform(post("http://localhost:8081/patient/add?family=TestNone&given=Test&dob=1966-12-31&sex=F&address=1 Brrokside St&phone=100-222-3333")
@@ -88,6 +89,18 @@ class PatientControllerTest {
         mockMvc.perform(get("http://localhost:8081/patients"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.patientList", hasSize(4)));
+    }
+
+    @Test
+    void get_patient_by_id() throws Exception {
+        Patient patient = new Patient();
+        patient = objectMapper.readValue(new File(FILE_PATH + "mockPatient.json"), Patient.class);
+
+        when(patientRepository.findById(anyLong())).thenReturn(Optional.ofNullable(patient));
+
+        mockMvc.perform(get("http://localhost:8081/patient/get/1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.givenName").value("Pippa"));
     }
 
     @Test
@@ -152,7 +165,7 @@ class PatientControllerTest {
         Patient deletePatient = optionalPatient.get();
 
         mockMvc.perform(delete("http://localhost:8081/patient/delete/11")
-                .content(objectMapper.writeValueAsString(deletePatient)))
+                        .content(objectMapper.writeValueAsString(deletePatient)))
                 .andExpect(status().isOk());
     }
 
