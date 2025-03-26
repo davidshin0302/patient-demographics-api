@@ -46,6 +46,28 @@ public class PatientController {
         return responseEntity;
     }
 
+    @GetMapping("patient/get/{id}")
+    public ResponseEntity<Patient> getPatients(@PathVariable Long id) {
+        ResponseEntity<Patient> responseEntity;
+
+        try {
+            Patient patient = new Patient();
+            patient = patientRepository.findById(id).orElse(null);
+
+            responseEntity = ResponseEntity.status(HttpStatus.OK)
+                    .body(patient);
+            log.info("processed GET request '/patient/id/{}....", id);
+        } catch (RuntimeException ex) {
+            log.error("Unable to fetch patients");
+            log.error(ex.getMessage());
+
+            responseEntity = ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+
+        return responseEntity;
+    }
+
+
     @PutMapping("patient/update/{id}")
     public ResponseEntity<Patient> updatePatient(@PathVariable Long id, @RequestBody Patient updatePatient) {
         ResponseEntity<Patient> responseEntity;
@@ -135,17 +157,4 @@ public class PatientController {
 
         return responseEntity;
     }
-
-/*    Temporarily for API endpoint to use thymeleaf .
-    @GetMapping
-    public String showPatientPage(Model model) {
-        PatientList patientList = new PatientList();
-
-        patientList.setPatientList(patientRepository.findAll());
-
-        model.addAttribute("patientList", patientList.getPatientList());
-
-        return "patient-list";
-    }
- */
 }
