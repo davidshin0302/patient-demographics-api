@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>PatientController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">patient-demographics-api</a> &gt; <a href="index.source.html" class="el_package">com.abernathyclinic.patientdemographics.controller</a> &gt; <span class="el_source">PatientController.java</span></div><h1>PatientController.java</h1><pre class="source lang-java linenums">package com.abernathyclinic.patientdemographics.controller;
+
+import com.abernathyclinic.patientdemographics.model.Patient;
+import com.abernathyclinic.patientdemographics.model.PatientList;
+import com.abernathyclinic.patientdemographics.repository.PatientRepository;
+import jakarta.persistence.EntityNotFoundException;
+import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Optional;
+
+/**
+ * REST controller for managing Patient resources.
+ */
+<span class="fc" id="L22">@Slf4j</span>
+@Controller
+@CrossOrigin
+@RequestMapping
+<span class="fc" id="L26">public class PatientController {</span>
+
+    @Autowired
+    PatientRepository patientRepository;
+
+    /**
+     * Retrieves a list of all patients.
+     *
+     * @return ResponseEntity containing a PatientList object with all patients, or an error response.
+     */
+    @GetMapping(&quot;/patients&quot;)
+    public ResponseEntity&lt;PatientList&gt; getPatients() {
+        ResponseEntity&lt;PatientList&gt; responseEntity;
+
+        try {
+<span class="fc" id="L41">            PatientList patientList = new PatientList();</span>
+<span class="fc" id="L42">            patientList.setPatientList(patientRepository.findAll());</span>
+
+<span class="fc" id="L44">            responseEntity = ResponseEntity.status(HttpStatus.OK).body(patientList);</span>
+<span class="fc" id="L45">            log.info(&quot;processed GET request '/patient/data....&quot;);</span>
+<span class="fc" id="L46">        } catch (RuntimeException ex) {</span>
+<span class="fc" id="L47">            log.error(&quot;Unable to fetch list of patients&quot;);</span>
+<span class="fc" id="L48">            log.error(ex.getMessage());</span>
+
+<span class="fc" id="L50">            responseEntity = ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();</span>
+<span class="fc" id="L51">        }</span>
+
+<span class="fc" id="L53">        return responseEntity;</span>
+    }
+
+    /**
+     * Retrieves a patient by ID.
+     *
+     * @param id The ID of the patient to retrieve.
+     * @return ResponseEntity containing the Patient object, or an error response.
+     */
+    @GetMapping(&quot;patient/get/{id}&quot;)
+    public ResponseEntity&lt;Patient&gt; getPatients(@PathVariable Long id) {
+        ResponseEntity&lt;Patient&gt; responseEntity;
+
+        try {
+<span class="fc" id="L67">            Patient patient = new Patient();</span>
+<span class="fc" id="L68">            patient = patientRepository.findById(id).orElse(null);</span>
+
+<span class="fc" id="L70">            responseEntity = ResponseEntity.status(HttpStatus.OK).body(patient);</span>
+<span class="fc" id="L71">            log.info(&quot;processed GET request '/patient/id/{}....&quot;, id);</span>
+<span class="nc" id="L72">        } catch (RuntimeException ex) {</span>
+<span class="nc" id="L73">            log.error(&quot;Unable to fetch patients&quot;);</span>
+<span class="nc" id="L74">            log.error(ex.getMessage());</span>
+
+<span class="nc" id="L76">            responseEntity = ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();</span>
+<span class="fc" id="L77">        }</span>
+
+<span class="fc" id="L79">        return responseEntity;</span>
+    }
+
+    /**
+     * Updates an existing patient's information.
+     *
+     * @param id            The ID of the patient to update.
+     * @param updatePatient The Patient object containing the updated information.
+     * @return ResponseEntity containing the updated Patient object, or an error response.
+     */
+    @PutMapping(&quot;patient/update/{id}&quot;)
+    public ResponseEntity&lt;Patient&gt; updatePatient(@PathVariable Long id, @RequestBody Patient updatePatient) {
+        ResponseEntity&lt;Patient&gt; responseEntity;
+
+        try {
+<span class="pc" id="L94">            Patient patient = patientRepository.findById(id).orElseThrow(() -&gt; new EntityNotFoundException(&quot;Patient with Id is not found, ID: &quot; + id));</span>
+
+<span class="fc" id="L96">            patient.setGivenName(updatePatient.getGivenName());</span>
+<span class="fc" id="L97">            patient.setFamilyName(updatePatient.getFamilyName());</span>
+<span class="fc" id="L98">            patient.setDateOfBirth(updatePatient.getDateOfBirth());</span>
+<span class="fc" id="L99">            patient.setSex(updatePatient.getSex());</span>
+<span class="fc" id="L100">            patient.setPhoneNumber(updatePatient.getPhoneNumber());</span>
+<span class="fc" id="L101">            patient.setHomeAddress(updatePatient.getHomeAddress());</span>
+
+<span class="fc" id="L103">            patientRepository.save(patient);</span>
+<span class="fc" id="L104">            responseEntity = ResponseEntity.status(HttpStatus.OK).body(patient);</span>
+
+<span class="fc" id="L106">            log.info(&quot;processed Put request '/patient/update/....&quot;);</span>
+<span class="fc" id="L107">        } catch (EntityNotFoundException ex) {</span>
+<span class="fc" id="L108">            log.error(ex.getMessage());</span>
+<span class="fc" id="L109">            responseEntity = ResponseEntity.status(HttpStatus.NOT_FOUND).build();</span>
+<span class="fc" id="L110">        } catch (RuntimeException ex) {</span>
+<span class="fc" id="L111">            log.error(&quot;Unexpected Error Occurred: {}&quot;, ex.getMessage());</span>
+<span class="fc" id="L112">            responseEntity = ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();</span>
+<span class="fc" id="L113">        }</span>
+
+<span class="fc" id="L115">        return responseEntity;</span>
+    }
+
+    /**
+     * Adds a new patient.
+     *
+     * @param familyName  The patient's family name.
+     * @param givenName   The patient's given name.
+     * @param dateOfBirth The patient's date of birth.
+     * @param sex         The patient's sex.
+     * @param homeAddress The patient's home address.
+     * @param phoneNumber The patient's phone number.
+     * @return ResponseEntity containing the created Patient object, or an error response.
+     */
+    @PostMapping(&quot;patient/add&quot;)
+    public ResponseEntity&lt;Patient&gt; addPatient(@Valid @RequestParam(&quot;family&quot;) String familyName, @Valid @RequestParam(&quot;given&quot;) String givenName, @Valid @RequestParam(&quot;dob&quot;) String dateOfBirth, @Valid @RequestParam(&quot;sex&quot;) String sex, @RequestParam(&quot;address&quot;) String homeAddress, @RequestParam(&quot;phone&quot;) String phoneNumber) {
+
+        ResponseEntity&lt;Patient&gt; responseEntity;
+
+<span class="fc" id="L134">        Patient patient = Patient.builder().familyName(familyName).givenName(givenName).dateOfBirth(dateOfBirth).sex(sex).homeAddress(homeAddress).phoneNumber(phoneNumber).build();</span>
+
+        try {
+<span class="fc" id="L137">            patientRepository.save(patient);</span>
+
+<span class="fc" id="L139">            responseEntity = ResponseEntity.status(HttpStatus.CREATED).contentType(MediaType.APPLICATION_JSON).body(patient);</span>
+
+<span class="fc" id="L141">            log.info(&quot;processed POST request '/patient'...&quot;);</span>
+<span class="fc" id="L142">        } catch (DataIntegrityViolationException ex) {</span>
+<span class="fc" id="L143">            log.error(&quot;The Patient already exist in the system: {}&quot;, patient);</span>
+<span class="fc" id="L144">            log.error(ex.getMessage());</span>
+
+<span class="fc" id="L146">            responseEntity = ResponseEntity.status(HttpStatus.CONFLICT).build();</span>
+<span class="fc" id="L147">        } catch (RuntimeException ex) {</span>
+<span class="fc" id="L148">            log.error(&quot;Unable to add new patent: {}&quot;, patient);</span>
+<span class="fc" id="L149">            log.error(ex.getMessage());</span>
+
+<span class="fc" id="L151">            responseEntity = ResponseEntity.status(HttpStatus.BAD_REQUEST).build();</span>
+<span class="fc" id="L152">        }</span>
+
+<span class="fc" id="L154">        return responseEntity;</span>
+    }
+
+    /**
+     * Deletes a patient by ID.
+     *
+     * @param id The ID of the patient to delete.
+     * @return ResponseEntity with HttpStatus.OK if successful, or HttpStatus.NOT_FOUND if the patient is not found.
+     */
+    @DeleteMapping(&quot;/patient/delete/{id}&quot;)
+    public ResponseEntity&lt;HttpStatus&gt; deletePatient(@PathVariable Long id) {
+        ResponseEntity&lt;HttpStatus&gt; responseEntity;
+<span class="fc" id="L166">        Optional&lt;Patient&gt; patientOptional = patientRepository.findById(id);</span>
+
+<span class="fc bfc" id="L168" title="All 2 branches covered.">        if (patientOptional.isPresent()) {</span>
+<span class="fc" id="L169">            patientRepository.delete(patientOptional.get());</span>
+
+<span class="fc" id="L171">            responseEntity = ResponseEntity.status(HttpStatus.OK).build();</span>
+<span class="fc" id="L172">            log.info(&quot;processed DELETE request '/patient'...&quot;);</span>
+        } else {
+<span class="fc" id="L174">            log.error(&quot;Couldn't find the matching Patient, Id: {}&quot;, id);</span>
+<span class="fc" id="L175">            responseEntity = ResponseEntity.status(HttpStatus.NOT_FOUND).build();</span>
+        }
+
+<span class="fc" id="L178">        return responseEntity;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>
