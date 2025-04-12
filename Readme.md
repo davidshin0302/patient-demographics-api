@@ -76,8 +76,8 @@ You can add test patient data to the database by sending GET requests to the `/p
 
 Here are some example requests (you can use tools like Postman or curl):
 
-- `GET /patient/add?family=Doe&given=John&dob=1990-05-15&sex=Male&address=123 Main St&phone=555-1234`
-- `GET /patient/add?family=Smith&given=Jane&dob=1988-11-20&sex=Female&address=456 Oak Ave&phone=555-5678`
+- `POST /patient/add?family=Doe&given=John&dob=1990-05-15&sex=Male&address=123 Main St&phone=555-1234`
+- `POST /patient/add?family=Smith&given=Jane&dob=1988-11-20&sex=Female&address=456 Oak Ave&phone=555-5678`
 
 ## 4. JaCoCo Report
 
