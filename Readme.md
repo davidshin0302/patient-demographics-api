@@ -83,7 +83,7 @@ Here are some example requests (you can use tools like Postman or curl):
 
 The JaCoCo code coverage report for this project can be found within the project structure at:
 
-![Code Coverage](src/main/resources/templates/patient-demogrpahic-api jacoco report.png)
+![Code Coverage](src/main/resources/templates/patient-demogrpahic-api%20jacoco%20report.png)
 This report provides details on the test coverage of the codebase.
 
 ## 5. Minimum Java Version
